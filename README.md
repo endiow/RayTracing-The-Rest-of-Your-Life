@@ -8,11 +8,11 @@
 
 只有光源
 
-![light](./RayTracing_2_v4/output/lightonly.png)
+![light](./RayTracing_2_v4/output/light_only.png)
 
 BRDF完整版
 
-![mix](./RayTracing_2_v4/output/mix_pdf.png)
+![mix](./RayTracing_2_v4/output/mixpdf.png)
 
 参考文章
 
