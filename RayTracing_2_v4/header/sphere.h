@@ -1,7 +1,7 @@
 #pragma once
 
 #include "hittable.h"
-#include "rtweekend.h"
+#include "onb.h"
 
 class sphere : public hittable 
 {
@@ -61,6 +61,28 @@ public:
 
     aabb bounding_box() const override { return bbox; }
 
+    double pdf_value(const point3& origin, const vec3& direction) const override 
+    {
+        // This method only works for stationary spheres.
+
+        hit_record rec;
+        if (!this->hit(ray(origin, direction), interval(0.001, infinity), rec))
+            return 0;
+
+        auto cos_theta_max = std::sqrt(1 - radius * radius / (center1 - origin).length_squared());
+        auto solid_angle = 2 * pi * (1 - cos_theta_max);
+
+        return  1 / solid_angle;
+    }
+
+    vec3 random(const point3& origin) const override 
+    {
+        vec3 direction = center1 - origin;
+        auto distance_squared = direction.length_squared();
+        onb uvw(direction);
+        return uvw.transform(random_to_sphere(radius, distance_squared));
+    }
+
 private:
     point3 center1;
     double radius;
@@ -90,5 +112,18 @@ private:
 
         u = phi / (2 * pi);
         v = theta / pi;
+    }
+
+    static vec3 random_to_sphere(double radius, double distance_squared) 
+    {
+        auto r1 = random_double();
+        auto r2 = random_double();
+        auto z = 1 + r2 * (std::sqrt(1 - radius * radius / distance_squared) - 1);
+
+        auto phi = 2 * pi * r1;
+        auto x = std::cos(phi) * std::sqrt(1 - z * z);
+        auto y = std::sin(phi) * std::sqrt(1 - z * z);
+
+        return vec3(x, y, z);
     }
 };

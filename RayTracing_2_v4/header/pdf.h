@@ -10,7 +10,7 @@ class pdf
 public:
     virtual ~pdf() {}
 
-    virtual double value(const vec3& direction) const = 0;
+    virtual double value(const vec3& direction) const = 0;      //返回概率密度函数
     virtual vec3 generate() const = 0;
 };
 
@@ -22,7 +22,7 @@ public:
 
     double value(const vec3& direction) const override 
     {
-        return 1 / (4 * pi);
+        return 1 / (4 * pi);        //球随机分布
     }
 
     vec3 generate() const override 
@@ -40,7 +40,7 @@ public:
     double value(const vec3& direction) const override 
     {
         auto cosine_theta = dot(unit_vector(direction), uvw.w());
-        return std::fmax(0, cosine_theta / pi);
+        return std::fmax(0, cosine_theta / pi);     //越靠近法线概率越大
     }
 
     vec3 generate() const override 
@@ -50,29 +50,6 @@ public:
 
 private:
     onb uvw;
-};
-
-
-class hittable_pdf : public pdf 
-{
-public:
-    hittable_pdf(const hittable& objects, const point3& origin)
-        : objects(objects), origin(origin)
-    {}
-
-    double value(const vec3& direction) const override 
-    {
-        return objects.pdf_value(origin, direction);
-    }
-
-    vec3 generate() const override 
-    {
-        return objects.random(origin);
-    }
-
-private:
-    const hittable& objects;
-    point3 origin;
 };
 
 
@@ -92,17 +69,35 @@ public:
 
     vec3 generate() const override 
     {
-        if (random_double() < 1)
+        if (random_double() < 0.5)        //来自散射和光源的权重
             return p[0]->generate();
         else
             return p[1]->generate();
     }
 
-    double light(const vec3& direction)
+private:
+    shared_ptr<pdf> p[2];
+};
+
+
+class hittable_pdf : public pdf
+{
+public:
+    hittable_pdf(const hittable& objects, const point3& origin)
+        : objects(objects), origin(origin)
+    {}
+
+    double value(const vec3& direction) const override
     {
-        return p[0]->value(direction);
+        return objects.pdf_value(origin, direction);
+    }
+
+    vec3 generate() const override
+    {
+        return objects.random(origin);
     }
 
 private:
-    shared_ptr<pdf> p[2];
+    const hittable& objects;
+    point3 origin;
 };

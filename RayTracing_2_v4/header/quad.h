@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "rtweekend.h"
 
 #include "hittable.h"
@@ -34,21 +34,21 @@ public:
     {
         auto denom = dot(normal, r.direction());
 
-        // ¹âÏßÓëÆ½ÃæÆ½ĞĞ
+        // å…‰çº¿ä¸å¹³é¢å¹³è¡Œ
         if (std::fabs(denom) < 1e-8)
             return false;
 
-        // ½»µãÔÚÉäÏß·¶Î§Ö®Íâ(Æ½ÃæÒ²ÓĞ°üÎ§ºĞ)
+        // äº¤ç‚¹åœ¨å°„çº¿èŒƒå›´ä¹‹å¤–(å¹³é¢ä¹Ÿæœ‰åŒ…å›´ç›’)
         auto t = (D - dot(normal, r.origin())) / denom;
         if (!ray_t.contains(t))
             return false;
 
-        auto intersection = r.at(t);    //½»µã
+        auto intersection = r.at(t);    //äº¤ç‚¹
         vec3 planar_hitpt_vector = intersection - Q;
-        auto alpha = dot(w, cross(planar_hitpt_vector, v));     //Ëã³öµãÏà¶ÔÓÚÆ½ÃæQµÄÆ«ÒÆ
+        auto alpha = dot(w, cross(planar_hitpt_vector, v));     //ç®—å‡ºç‚¹ç›¸å¯¹äºå¹³é¢Qçš„åç§»
         auto beta = dot(w, cross(u, planar_hitpt_vector));
 
-        if (!is_interior(alpha, beta, rec))     //alpha,beta¶¼ÔÚ[0,1]¼´ÔÚquadÄÚ
+        if (!is_interior(alpha, beta, rec))     //alpha,betaéƒ½åœ¨[0,1]å³åœ¨quadå†…
             return false;
 
         rec.t = t;
@@ -59,6 +59,7 @@ public:
         return true;
     }
 
+    //åˆ¤æ–­å…‰çº¿ä¸å¹³é¢çš„äº¤ç‚¹æ˜¯å¦åœ¨å¹³é¢å†…
     virtual bool is_interior(double a, double b, hit_record& rec) const 
     {
         interval unit_interval = interval(0, 1);    
@@ -68,7 +69,7 @@ public:
         if (!unit_interval.contains(a) || !unit_interval.contains(b))
             return false;
 
-        rec.u = a;      //ÉèÖÃÎÆÀí×ø±êÖµ
+        rec.u = a;      //è®¾ç½®çº¹ç†åæ ‡å€¼
         rec.v = b;
         return true;
     }
@@ -79,10 +80,18 @@ public:
         if (!this->hit(ray(origin, direction), interval(0.001, infinity), rec))
             return 0;
 
+        //dA = rdÎ¸âˆ—rsinÎ¸dÏ†= r^2 sinÎ¸dÎ¸dÏ†
+        //ç«‹ä½“è§’ = dA / r^2 = sinÎ¸dÎ¸dÏ†
+        
+        //å¯¹äºå…‰æºAï¼Œåœ¨åŠçƒä¸Šçš„æŠ•å½±ç«‹ä½“è§’ dÏ‰ = (A * cosa)/ d^2
+        //å…¶ä¸­ï¼Œaä¸ºå…‰æºæ³•å‘é‡ä¸å…‰çº¿çš„å¤¹è§’
+        //åˆ™ï¼Œ æ¦‚ç‡ = p(Ï‰) * dÏ‰ = p(q) * dA      p(q)ä¸ºçƒå¿ƒpåˆ°å…‰æºä¸Šçš„ç‚¹qçš„æ¦‚ç‡å¯†åº¦å‡½æ•°   dÏ‰ä¸ºç«‹ä½“è§’
+        //å¯¹å…‰æºå‡åŒ€é‡‡æ ·ï¼Œåˆ™p(q) = 1/A
+        //æœ‰ï¼Œ(p(Ï‰) * dA * cos(Î¸)) / distance^2(p,q) = dA / A  =>  p(Ï‰) = distance^2 * (p,q) / cos(Î¸) * A 
         auto distance_squared = rec.t * rec.t * direction.length_squared();
         auto cosine = std::fabs(dot(direction, rec.normal) / direction.length());
 
-        return distance_squared / (cosine * area);      //·µ»Ø¹âÔ´µÄ¸ÅÂÊÃÜ¶Èº¯Êı
+        return distance_squared / (cosine * area);      //è¿”å›å…‰æºçš„æ¦‚ç‡å¯†åº¦å‡½æ•°
     }
 
     vec3 random(const point3& origin) const override 
@@ -92,14 +101,14 @@ public:
     }
 
 private:
-    point3 Q;   //»ùµã
-    vec3 u, v;  //Á½¸ö±ßÏòÁ¿
+    point3 Q;   //åŸºç‚¹
+    vec3 u, v;  //ä¸¤ä¸ªè¾¹å‘é‡
     vec3 w;     
     shared_ptr<material> mat;
     aabb bbox;
     vec3 normal;
     double D;
-    double area;    //¹âÔ´µÄA
+    double area;    //å…‰æºçš„A
 };
 
 

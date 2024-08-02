@@ -4,7 +4,7 @@
 class onb 
 {
 public:
-    onb(const vec3& n)  //生成局部坐标系
+    onb(const vec3& n)  //以n为z轴的局部坐标系
     {
         axis[2] = unit_vector(n);
         vec3 a = (std::fabs(axis[2].x()) > 0.9) ? vec3(0, 1, 0) : vec3(1, 0, 0);

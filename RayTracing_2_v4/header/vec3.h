@@ -126,7 +126,7 @@ inline vec3 unit_vector(const vec3& v)
     return v / v.length();
 }
 
-//球的随机立体角
+//球的随机向量
 inline vec3 random_direction()
 {
     auto r1 = random_double();
@@ -140,7 +140,7 @@ inline vec3 random_direction()
     return vec3(x, y, z);
 }
 
-//球的立体角,越偏向法线越多
+//球的随机向量,越偏向法线概率越大
 inline vec3 random_cosine_direction() 
 {
     auto r1 = random_double();
@@ -190,7 +190,7 @@ inline vec3 random_on_hemisphere(const vec3& normal)
 
 inline vec3 reflect(const vec3& v, const vec3& n) 
 {
-    return v - 2 * dot(v, n) * n;
+    return v - 2 * dot(v, n) * n;       //返回反射向量
 }
 
 inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) 
@@ -198,5 +198,5 @@ inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat)
     auto cos_theta = std::fmin(dot(-uv, n), 1.0);
     vec3 r_out_perp = etai_over_etat * (uv + cos_theta * n);
     vec3 r_out_parallel = -std::sqrt(std::fabs(1.0 - r_out_perp.length_squared())) * n;
-    return r_out_perp + r_out_parallel;
+    return r_out_perp + r_out_parallel;     //返回折射向量
 }

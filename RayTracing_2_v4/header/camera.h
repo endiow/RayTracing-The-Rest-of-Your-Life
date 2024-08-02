@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "rtweekend.h"
 #include "pdf.h"
@@ -48,7 +48,7 @@ public:
         std::clog << "\rDone.                 \n";
     }
 
-    void render1(const hittable& w, Mat& rendering, const hittable& world, const hittable& lights)
+    void render1(Mat& rendering, const hittable& world, const hittable& lights)
     {
         initialize();
 
@@ -64,7 +64,7 @@ public:
                 {
                     for (int s_i = 0; s_i < sqrt_spp; s_i++)
                     {
-                        ray r = get_ray(i, j, s_i, s_j);
+                        ray r = get_ray(i, (image_height - j - 1), s_i, s_j);
                         pixel_color += ray_color(r, max_depth, world, lights);
                     }
                 }
@@ -73,6 +73,11 @@ public:
                 auto r = pixel_samples_scale * pixel_color.x();
                 auto g = pixel_samples_scale * pixel_color.y();
                 auto b = pixel_samples_scale * pixel_color.z();
+
+                // Replace NaN components with zero.
+                /*if (r != r) r = 0.0;
+                if (g != g) g = 0.0;
+                if (b != b) b = 0.0;*/
 
                 // Apply a linear to gamma transform for gamma 2
                 r = linear_to_gamma(r);
@@ -85,17 +90,17 @@ public:
                 int gbyte = int(256 * intensity.clamp(g));
                 int bbyte = int(256 * intensity.clamp(b));
 
-                //ÊµÊ±ÏÔÊ¾äÖÈ¾Ö¡
+                //å®æ—¶æ˜¾ç¤ºæ¸²æŸ“å¸§
                 rendering.at<cv::Vec3b>(image_height - 1 - j, i)[0] = bbyte;
                 rendering.at<cv::Vec3b>(image_height - 1 - j, i)[1] = gbyte;
                 rendering.at<cv::Vec3b>(image_height - 1 - j, i)[2] = rbyte;
             }
 
-            //Ã¿ĞĞ¼ÆËãÍêÒÔºóË¢ĞÂÔ¤ÀÀ´°¿Ú
-            if (!(j % (image_height / 100))) //Ã¿äÖÈ¾image_height/100ĞĞºó¸üĞÂÔ¤ÀÀ´°¿ÚÍ¼Æ¬
+            //æ¯è¡Œè®¡ç®—å®Œä»¥ååˆ·æ–°é¢„è§ˆçª—å£
+            if (!(j % (image_height / 100))) //æ¯æ¸²æŸ“image_height/100è¡Œåæ›´æ–°é¢„è§ˆçª—å£å›¾ç‰‡
             {
-                imshow("Í¼ÏñÔ¤ÀÀ£¨äÖÈ¾ÖĞ£©", rendering);
-                waitKey(1);//µÈ´ı1ºÁÃëÊÂ¼şÈÃ´°¿ÚË¢ĞÂÍê±Ï
+                imshow("å›¾åƒé¢„è§ˆï¼ˆæ¸²æŸ“ä¸­ï¼‰", rendering);
+                waitKey(1);//ç­‰å¾…1æ¯«ç§’äº‹ä»¶è®©çª—å£åˆ·æ–°å®Œæ¯•
             }
         }
         std::clog << "\rDone.                 \n";
@@ -150,7 +155,7 @@ private:
         auto viewport_upper_left = center - (focus_dist * w) - viewport_u / 2 - viewport_v / 2;
         pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
-        // ¹âÈ¦µÄu,vÏòÁ¿
+        // å…‰åœˆçš„u,vå‘é‡
         auto defocus_radius = focus_dist * std::tan(degrees_to_radians(defocus_angle / 2));
         defocus_disk_u = u * defocus_radius;
         defocus_disk_v = v * defocus_radius;
@@ -158,8 +163,8 @@ private:
 
     ray get_ray(int i, int j, int s_i, int s_j) const
     {
-        // ¹¹½¨Ò»ÌõÔ´×Ô¹âÈ¦²¢Ëæ»úÖ¸ÏòµÄÏà»ú¹âÏß
-        // ¶ÔÓÚ·Ö²ãÑù±¾Õı·½ĞÎsi£¬sj£¬ÏñËØÎ»ÖÃi£¬jÖÜÎ§µÄ²ÉÑùµã
+        // æ„å»ºä¸€æ¡æºè‡ªå…‰åœˆå¹¶éšæœºæŒ‡å‘çš„ç›¸æœºå…‰çº¿
+        // å¯¹äºåˆ†å±‚æ ·æœ¬æ­£æ–¹å½¢siï¼Œsjï¼Œåƒç´ ä½ç½®iï¼Œjå‘¨å›´çš„é‡‡æ ·ç‚¹
 
         auto offset = sample_square_stratified(s_i, s_j);
 
@@ -186,7 +191,7 @@ private:
 
     vec3 sample_square() const 
     {
-        // ÔÚÏñËØÖÜÎ§[-.5£¬-.5]-[+.5£¬+.5]µ¥Î»Æ½·½ÄÚËæ»ú²ÉÑù
+        // åœ¨åƒç´ å‘¨å›´[-.5ï¼Œ-.5]-[+.5ï¼Œ+.5]å•ä½å¹³æ–¹å†…éšæœºé‡‡æ ·
         return vec3(random_double() - 0.5, random_double() - 0.5, 0);
     }
 
@@ -197,6 +202,8 @@ private:
         return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
     }
 
+    //color=âˆ«attenuationâˆ—s(direction)color(direction)=attenuationâˆ—s(direction)âˆ—color(direction)/p(direction)
+    //é¢œè‰² == âˆ«è¡°å‡ * æœ¬è‰² * åŠçƒå†…æ¯æ¡å…‰çº¿çš„æƒé‡ï¼ˆs(direction)ï¼‰/ å…‰çº¿çš„åˆ†å¸ƒæƒ…å†µï¼ˆp(direction)/pdfï¼‰
     color ray_color(const ray& r, int depth, const hittable& world, const hittable& lights) const
     {
         if (depth <= 0)
@@ -208,25 +215,27 @@ private:
         if (!world.hit(r, interval(0.001, infinity), rec))
             return background;
 
-        ray scattered;
-        color attenuation;
-        double pdf_value;
+        scatter_record srec;
         color color_from_emission = rec.mat->emitted(r, rec, rec.u, rec.v, rec.p);
 
-        if (!rec.mat->scatter(r, rec, attenuation, scattered, pdf_value))
+        if (!rec.mat->scatter(r, rec, srec))
             return color_from_emission;
 
-        auto p0 = make_shared<hittable_pdf>(lights, rec.p);
-        auto p1 = make_shared<cosine_pdf>(rec.normal);
-        mixture_pdf mixed_pdf(p0, p1);
+        if (srec.skip_pdf) 
+        {
+            return srec.attenuation * ray_color(srec.skip_pdf_ray, depth - 1, world, lights);
+        }
 
-        scattered = ray(rec.p, mixed_pdf.generate(), r.time());
-        pdf_value = mixed_pdf.value(scattered.direction());
+        auto light_ptr = make_shared<hittable_pdf>(lights, rec.p);
+        mixture_pdf p(light_ptr, srec.pdf_ptr);
+
+        ray scattered = ray(rec.p, p.generate(), r.time());
+        auto pdf_value = p.value(scattered.direction());
 
         double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered);
 
         color sample_color = ray_color(scattered, depth - 1, world, lights);
-        color color_from_scatter = (attenuation * scattering_pdf * sample_color) / pdf_value;
+        color color_from_scatter = (srec.attenuation * scattering_pdf * sample_color) / pdf_value;
 
         return color_from_emission + color_from_scatter;
     }
