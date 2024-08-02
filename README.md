@@ -6,13 +6,17 @@
 
 重新又学了概率论，感觉唤醒了尘封已久的记忆 XD
 
-只有光源
+## 只有光源
 
 ![light](./RayTracing_2_v4/output/light_only.png)
 
-BRDF完整版
+## BRDF完整版
 
 ![mix](./RayTracing_2_v4/output/mixpdf.png)
+
+## 玻璃球
+
+![glass](./RayTracing_2_v4/output/anti_noise.png)
 
 参考文章
 
