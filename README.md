@@ -16,7 +16,13 @@
 
 ## 玻璃球
 
-![glass](./RayTracing_2_v4/output/anti_noise.png)
+![glass](./RayTracing_2_v4/output/sphere.png)
+
+## 玻璃球光源
+
+同时对光源和玻璃球采样，计算平均pdf，但是玻璃没有pdf，导致噪点变多
+
+![glass](./RayTracing_2_v4/output/sphere_light.png)
 
 参考文章
 
